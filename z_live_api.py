@@ -1,5 +1,7 @@
 """ I am contineously working on code it is not in functionl condition right now on later stage i am planning to pass class veriable as class attribute. kiteext module is used for personal use not for any finencial use.
 if you want any part of code changed or have issue with it please write a mail to albeegupta121@gmail.com. just an initial stage. it is ment for public once complete. all contribution are welcome.
+i will also try to add greeks in options via  another static method. Any suggession is welcome
+
 Name of Contributers:
 
 1.
