@@ -29,7 +29,7 @@ class ZerodhaDataframes:
         self.bnifty_atm = float(self.atm_bnifty['last_price'])
 
     def login(self):
-        self.kite.login_using_enctoken(userid="GS7875", enctoken=open("enc.txt", "r").read(), public_token=None)
+        self.kite.login_using_enctoken(userid="GS1415", enctoken=open("enc.txt", "r").read(), public_token=None)
 
     def get_instruments(self):
         print('wait 1 min...')
