@@ -11,7 +11,6 @@ Name of Contributers:
 """
 import pandas as pd
 from kiteext import KiteExt
-from GetIVGreeks import *
 import time as tm
 
 class ZerodhaDataframes:
