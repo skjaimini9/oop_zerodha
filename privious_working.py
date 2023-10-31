@@ -130,6 +130,7 @@ class ZerodhaDataframes:
         live_dict = {}  # Empty dictionary to store live data
         for k,v in kite.quote(list(data_frame['symb'])).items():
             try:
+                live_dict[k]
                 print(live_dict[k])
             except Exception as e:
                 live_dict[k] = {}
