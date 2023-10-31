@@ -145,7 +145,22 @@ class ZerodhaDataframes:
         except Exception as e:
             print(e)
             pass
-        
+
+    @staticmethod
+    def generate_dataframefrom_df_instrument(df_instrument, name, expiry, instrument_type):
+        df = bnifty_wce.loc[
+            (df_instrument["name"] == name) &
+            (df_instrument["expiry"] == expiry) &
+            (df_instrument["instrument_type"] == instrument_type)
+        ]
+        df = df.reset_index(drop=True)
+        df['symb'] = df.apply(lambda row: f"{row['exchange']}:{row['tradingsymbol']}", axis=1)
+        atm_price = ZerodhaDataframes().get_atm_price('NSE:' + name)  # Assuming you have a get_atm_price method
+        atm_pos = df[df['strike'] == atm_price].index[0]
+        df = df.iloc[atm_pos - 10 : atm_pos + 11]
+        return df
+
+    
     @staticmethod
     def generate_live_dataframe(data_frame, prev_day_oi, lot_size, kite):
         live_dict = {}  # Empty dictionary to store live data
@@ -188,6 +203,8 @@ class ZerodhaDataframes:
         # Create a DataFrame from the live data dictionary
         live_data_df = pd.DataFrame(live_dict).transpose()            
         return live_data_df
+
+
 
 
 zdf = ZerodhaDataframes()
