@@ -12,7 +12,6 @@ Name of Contributers:
 """
 # To Fetch Futures Symbols from Instruments Just Pass symbol i.e NSE:SYMBOL, expiry if you want expiry, instrument_segment i.e NFO-FUT
 
-import pandas as pd
 
 #This Class is just to fetch Instrument Details from Zerodha
 import pandas as pd
