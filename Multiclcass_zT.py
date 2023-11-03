@@ -17,18 +17,16 @@ Name of Contributers:
 
 import pandas as pd
 from kiteext import KiteExt
-import kiteapp as kt
 
 class ZerodhaDataframes:
     def __init__(self, symbol, expiry=None, instrument_segment=None, exch=None):
-        self.kite = kite = kt.KiteApp("Shri Kant", "GS1415", open("enc.txt", "r").read())
+        self.kite = KiteExt()
         self.df_instrument = self.get_instruments()
         self.lot_symbol = symbol
         self.expiry = pd.to_datetime(expiry).strftime('%Y-%m-%d') if expiry is not None else None
         self.instrument_segment = instrument_segment
         self.exch = exch
-        print(self.kite.quote('NSE:NIFTY 50'))
-    
+
     def get_instruments(self):
         print('wait 1 min...')
         instruments = "https://api.kite.trade/instruments"
