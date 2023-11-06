@@ -13,27 +13,24 @@ Name of Contributers:
 
 
 
-
-
 import pandas as pd
 from kiteext import KiteExt
 
+
+df_instrument = pd.read_csv("https://api.kite.trade/instruments")
+df_instrument['expiry'] = pd.to_datetime(df_instrument['expiry']).dt.strftime('%Y-%m-%d')
+df_instrument['z_symb'] = df_instrument.apply(lambda row: f"{row['exchange']}:{row['tradingsymbol']}", axis=1)
+
+
+
 class ZerodhaDataframes:
+    global df_instrument
     def __init__(self, symbol, expiry=None, instrument_segment=None, exch=None):
-        self.kite = KiteExt()
-        self.df_instrument = self.get_instruments()
+        self.df_instrument = df_instrument
         self.lot_symbol = symbol
         self.expiry = pd.to_datetime(expiry).strftime('%Y-%m-%d') if expiry is not None else None
         self.instrument_segment = instrument_segment
         self.exch = exch
-
-    def get_instruments(self):
-        print('wait 1 min...')
-        instruments = "https://api.kite.trade/instruments"
-        df_instrument = pd.read_csv(instruments)
-        df_instrument['expiry'] = pd.to_datetime(df_instrument['expiry']).dt.strftime('%Y-%m-%d')
-        df_instrument['z_symb'] = df_instrument.apply(lambda row: f"{row['exchange']}:{row['tradingsymbol']}", axis=1)
-        return df_instrument
 
     def lot_symb(self):
         if self.exch != self.lot_symbol[:3]:
@@ -58,6 +55,29 @@ class ZerodhaDataframes:
             filterd_instruments = self.df_instrument[(self.df_instrument["z_symb"] == symbol) & (self.df_instrument["exchange"] == self.lot_symbol[:3])]
         filterd_instruments = filterd_instruments.reset_index(drop=True)
         return filterd_instruments
+
+    @staticmethod
+    def filter_instruments_for_symbols(symbols, instrument_segment=None, expiry=None):
+        filtered_dataframes = []
+        for symbol in symbols:
+            zdf = ZerodhaDataframes(symbol, instrument_segment=instrument_segment, expiry=expiry)
+            filtered_df = zdf.filtered_instrument()
+            filtered_dataframes.append(filtered_df)
+        combined_df = pd.concat(filtered_dataframes, ignore_index=True)
+        return combined_df
+
+
+sample_fut_z_symb_df = pd.read_csv('sample_cash_z_symb.csv')
+fut_z_symb_list = list(sample_cash_z_symb_df['z_symb'])
+
+# Filter instruments for a list of symbols with NFO-FUT instrument segment
+combined_df = ZerodhaDataframes.filter_instruments_for_symbols(fut_z_symb_list, instrument_segment="NFO-FUT")
+print(combined_df)
+
+# Filter instruments for a list of symbols with expiry date "11-30-2023"
+combined_df = ZerodhaDataframes.filter_instruments_for_symbols(fut_z_symb_list, expiry="11-30-2023", instrument_segment="NFO-FUT")
+print(combined_df)
+
 
 zdf_cash_bse = ZerodhaDataframes("BSE:SENSEX", exch="BSE")
 print(zdf_cash_bse.filtered_instrument())
