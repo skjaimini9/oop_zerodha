@@ -39,8 +39,9 @@ class ZerodhaDataframes:
                 "NSE:NIFTY 50": "NIFTY"
             }
             symbol = self.lot_symbol
-            if symbol in symbol_map:
-                return symbol_map[symbol]
+            mapped_symbol = symbol_map.get(symbol)
+            if mapped_symbol:
+                return mapped_symbol
             else:
                 return symbol[4:].replace(" ", "")
         return self.lot_symbol
@@ -48,24 +49,31 @@ class ZerodhaDataframes:
     def filtered_instrument(self):
         symbol = self.lot_symb()
         if self.expiry is None and self.instrument_segment == "NFO-FUT":
-            filterd_instruments = self.df_instrument[(self.df_instrument["name"] == symbol) & (self.df_instrument["segment"] == self.instrument_segment)]
+            filterd_instruments = self.df_instrument[
+                (self.df_instrument["name"] == symbol) & (self.df_instrument["segment"] == self.instrument_segment)
+            ]
         elif self.expiry is not None and self.instrument_segment is not None:
-            filterd_instruments = self.df_instrument[(self.df_instrument["name"] == symbol) & (self.df_instrument["segment"] == self.instrument_segment) & (self.df_instrument["expiry"] == self.expiry)]
+            filterd_instruments = self.df_instrument[
+                (self.df_instrument["name"] == symbol) & (self.df_instrument["segment"] == self.instrument_segment) & (self.df_instrument["expiry"] == self.expiry)
+            ]
         else:
-            filterd_instruments = self.df_instrument[(self.df_instrument["z_symb"] == symbol) & (self.df_instrument["exchange"] == self.lot_symbol[:3])]
-        filterd_instruments = filterd_instruments.reset_index(drop=True)
+            filterd_instruments = self.df_instrument[
+                (self.df_instrument["z_symb"] == symbol) & (self.df_instrument["exchange"] == self.lot_symbol[:3])
+            ]
+        filterd_instruments.reset_index(drop=True, inplace=True)
+        filterd_instruments = pd.DataFrame(filterd_instruments)
         return filterd_instruments
-
+    
     @staticmethod
     def filter_instruments_for_symbols(symbols, instrument_segment=None, expiry=None):
         dataframes = [ZerodhaDataframes(symbol, instrument_segment=instrument_segment, expiry=expiry) for symbol in symbols]
         filtered_dataframes = [zdf.filtered_instrument() for zdf in dataframes]
         combined_df = pd.concat(filtered_dataframes, ignore_index=True)
         return combined_df
-
+    
     @staticmethod
     def load_lot_size_data(data):
-        data.set_index('instrument_token', inplace=True)
+        data.set_index('instrument_token')
         lot_size_dict = data['lot_size'].to_dict()
         return lot_size_dict
 
