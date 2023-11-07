@@ -66,6 +66,15 @@ class ZerodhaDataframes:
         combined_df = pd.concat(filtered_dataframes, ignore_index=True)
         return combined_df
 
+    @staticmethod
+    def load_lot_size_data(data):
+        lot_size_dict = {}
+        for index, row in data.iterrows():
+            instrument_token = row['instrument_token']
+            lot_size = row['lot_size']
+            lot_size_dict[instrument_token] = lot_size
+        return lot_size_dict
+
 
 sample_fut_z_symb_df = pd.read_csv('sample_cash_z_symb.csv')
 fut_z_symb_list = list(sample_cash_z_symb_df['z_symb'])
