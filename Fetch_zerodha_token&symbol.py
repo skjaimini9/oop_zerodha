@@ -58,11 +58,8 @@ class ZerodhaDataframes:
 
     @staticmethod
     def filter_instruments_for_symbols(symbols, instrument_segment=None, expiry=None):
-        filtered_dataframes = []
-        for symbol in symbols:
-            zdf = ZerodhaDataframes(symbol, instrument_segment=instrument_segment, expiry=expiry)
-            filtered_df = zdf.filtered_instrument()
-            filtered_dataframes.append(filtered_df)
+        dataframes = [ZerodhaDataframes(symbol, instrument_segment=instrument_segment, expiry=expiry) for symbol in symbols]
+        filtered_dataframes = [zdf.filtered_instrument() for zdf in dataframes]
         combined_df = pd.concat(filtered_dataframes, ignore_index=True)
         return combined_df
 
