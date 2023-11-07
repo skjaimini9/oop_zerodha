@@ -68,11 +68,8 @@ class ZerodhaDataframes:
 
     @staticmethod
     def load_lot_size_data(data):
-        lot_size_dict = {}
-        for index, row in data.iterrows():
-            instrument_token = row['instrument_token']
-            lot_size = row['lot_size']
-            lot_size_dict[instrument_token] = lot_size
+        data.set_index('instrument_token', inplace=True)
+        lot_size_dict = data['lot_size'].to_dict()
         return lot_size_dict
 
 
