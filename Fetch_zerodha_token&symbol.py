@@ -38,7 +38,7 @@ class ZerodhaDataframes:
         self.expiry = pd.to_datetime(expiry).strftime('%Y-%m-%d') if expiry is not None else None
         self.instrument_segment = instrument_segment
         self.exch = exch
-        self.atm_base = "FUT" #"SPOT"
+        self.atm_base = "FUT" # or "SPOT" Select Spot to Calculate ATM strike of Option Based on Either FUT/SPOT in UPPER CASE
         self.lot_size = None
         self.get_oi_thread = None  # Add a thread attribute
         self.kite = KiteExt()
