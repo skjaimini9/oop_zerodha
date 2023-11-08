@@ -15,6 +15,13 @@ Name of Contributers:
 
 import pandas as pd
 from kiteext import KiteExt
+import time as tm
+from datetime import datetime, timedelta
+import threading
+import numpy as np
+import datetime as dt
+import warnings
+warnings.filterwarnings("ignore")
 
 
 df_instrument = pd.read_csv("https://api.kite.trade/instruments")
@@ -31,7 +38,16 @@ class ZerodhaDataframes:
         self.expiry = pd.to_datetime(expiry).strftime('%Y-%m-%d') if expiry is not None else None
         self.instrument_segment = instrument_segment
         self.exch = exch
+        self.atm_base = "FUT" #"SPOT"
+        self.lot_size = None
+        self.get_oi_thread = None  # Add a thread attribute
+        self.kite = KiteExt()
+        self.login()
 
+    def login(self):
+        #Create your login method based on KiteExt using api with threaded=True i am going to pass it for now so to keep program working for Symbol and Token Fetching
+        pass
+    
     def lot_symb(self):
         if self.exch != self.lot_symbol[:3]:
             symbol_map = {
@@ -76,6 +92,41 @@ class ZerodhaDataframes:
         data.set_index('instrument_token')
         lot_size_dict = data['lot_size'].to_dict()
         return lot_size_dict
+
+    def get_atm_strike(self, data):
+        if data['segment'][0] == "NFO-OPT" and self.atm_base in ["SPOT", "FUT"]:
+            name = data['name'][0]
+            exchange = data['exchange'][0]
+            segment = data['segment'][0]
+            if segment.endswith("-OPT"):
+                # Extract the base segment
+                base_segment = segment[:-4]
+                base_suffix = "FUT"
+                if self.atm_base == "SPOT":
+                    if name == "NIFTY":
+                        ltp_symb = self.kite.ltp('NSE:NIFTY 50')['NSE:NIFTY 50']['last_price']
+                    elif name == "BANKNIFTY":
+                        ltp_symb = self.kite.ltp('NSE:NIFTY BANK')['NSE:NIFTY BANK']['last_price']
+                    else:
+                        lot_symb = f'{exchange}:{name}'
+                        ltp_symb = self.kite.ltp(lot_symb)[lot_symb]['last_price']
+                    data['strike_gap'] = abs(data['strike'] - ltp_symb)
+                elif self.atm_base == "FUT":
+                    fut_df = self.df_instrument[(self.df_instrument["name"] == name) & (self.df_instrument["segment"] == f'{exchange}-{base_suffix}')]
+                    fut_df['expiry'] = pd.to_datetime(fut_df['expiry'])
+                    td = dt.datetime.now()
+                    nearest_exp = (fut_df['expiry'] - td).abs().idxmin()
+                    fut_df = fut_df.loc[[nearest_exp]]  # Use .loc to select specific rows
+                    fut_symb = fut_df['z_symb'].iloc[0]
+                    fut_price = self.kite.ltp(fut_symb)[fut_symb]['last_price']
+                    data['strike_gap'] = abs(data['strike'] - fut_price)
+                
+                Min_gap = data['strike_gap'].min()
+                atm_strike = data[data.strike_gap == Min_gap].iloc[0]['strike']
+                return atm_strike
+        else:
+            print('Issue in getting ltp Data')
+            pass
 
 
 sample_fut_z_symb_df = pd.read_csv('sample_cash_z_symb.csv')
